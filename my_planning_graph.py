@@ -153,7 +153,6 @@ class PlanningGraph:
         --------
         Russell-Norvig 10.3.1 (3rd Edition)
         """
-        self.fill()
 
         cost = {}
         satisfied = {}
@@ -162,8 +161,14 @@ class PlanningGraph:
             cost[g] = 0
             satisfied[g] = False
 
-        for ll in self.literal_layers:
+        idx = 0
+        while not self._is_leveled:
+            ll = self.literal_layers[-1]
+
+            #print('layer: '+str(idx))
+
             for g in self.goal:
+                #print(g)
                 for item in ll:
                     if item == g:
                         if not satisfied[g]:
@@ -171,6 +176,9 @@ class PlanningGraph:
 
                 if not satisfied[g]:
                     cost[g] += 1
+
+            self._extend()
+            idx += 1
 
         level_sum = 0
 
