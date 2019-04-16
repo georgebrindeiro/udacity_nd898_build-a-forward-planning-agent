@@ -157,43 +157,25 @@ class PlanningGraph:
 
         cost = {}
         satisfied = {}
-        #print('')
-        #print('goals:')
+
         for g in self.goal:
-            #print(g)
             cost[g] = 0
             satisfied[g] = False
 
-        idx = 0
         for ll in self.literal_layers:
-            #print("layer: "+str(idx))
-            idx += 1
-
             for g in self.goal:
-                status = 'not found'
-
                 for item in ll:
                     if item == g:
-                        if not satisfied[item]:
-                            satisfied[item] = True
-                            status = 'goal found'
-                        else:
-                            status = 'found before'
+                        if not satisfied[g]:
+                            satisfied[g] = True
 
-                if(status == 'not found'):
+                if not satisfied[g]:
                     cost[g] += 1
-
-                #print(str(g)+': '+status)
 
         level_sum = 0
 
-        #print('costs:')
-
         for g,c in cost.items():
-            #print(str(g)+': '+str(c))
             level_sum += c
-
-        #print('level_sum: '+str(level_sum))
 
         return level_sum
 
