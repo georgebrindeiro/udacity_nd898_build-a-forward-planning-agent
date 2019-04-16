@@ -153,31 +153,49 @@ class PlanningGraph:
         --------
         Russell-Norvig 10.3.1 (3rd Edition)
         """
-        """cost = {}
-        satisfied = {}
-        print('')
+        self.fill()
 
+        cost = {}
+        satisfied = {}
+        #print('')
+        #print('goals:')
         for g in self.goal:
-            print(g)
+            #print(g)
             cost[g] = 0
             satisfied[g] = False
 
+        idx = 0
         for ll in self.literal_layers:
-            print(ll.__store)
+            #print("layer: "+str(idx))
+            idx += 1
 
             for g in self.goal:
-                if g not in ll:
-                    if not satisfied[g]:
-                        cost[g] += 1
-                else:
-                    satisfied[g] = True
+                status = 'not found'
+
+                for item in ll:
+                    if item == g:
+                        if not satisfied[item]:
+                            satisfied[item] = True
+                            status = 'goal found'
+                        else:
+                            status = 'found before'
+
+                if(status == 'not found'):
+                    cost[g] += 1
+
+                #print(str(g)+': '+status)
 
         level_sum = 0
 
+        #print('costs:')
+
         for g,c in cost.items():
+            #print(str(g)+': '+str(c))
             level_sum += c
 
-        return level_sum"""
+        #print('level_sum: '+str(level_sum))
+
+        return level_sum
 
     def h_maxlevel(self):
         """ Calculate the max level heuristic for the planning graph
