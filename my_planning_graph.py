@@ -128,6 +128,44 @@ class PlanningGraph:
         self.literal_layers = [layer]
         self.action_layers = []
 
+    def levelcost(self):
+
+        cost = {}
+        satisfied = {}
+
+        for g in self.goal:
+            cost[g] = 0
+            satisfied[g] = False
+
+        idx = 0
+        while not self._is_leveled:
+            ll = self.literal_layers[-1]
+
+            for g in self.goal:
+                #print(g)
+                for item in ll:
+                    if item == g:
+                        if not satisfied[g]:
+                            satisfied[g] = True
+
+                if not satisfied[g]:
+                    cost[g] += 1
+
+            no_goals_left = not (False in satisfied.values())
+
+            #print('layer: '+str(idx))
+            #print(satisfied)
+            #print('leveled? '+str(self._is_leveled))
+            #print('no goals left?'+str(no_goals_left))
+
+            if no_goals_left:
+                break
+
+            self._extend()
+            idx += 1
+
+        return cost
+
     def h_levelsum(self):
         """ Calculate the level sum heuristic for the planning graph
 
@@ -153,32 +191,7 @@ class PlanningGraph:
         --------
         Russell-Norvig 10.3.1 (3rd Edition)
         """
-
-        cost = {}
-        satisfied = {}
-
-        for g in self.goal:
-            cost[g] = 0
-            satisfied[g] = False
-
-        idx = 0
-        while not self._is_leveled:
-            ll = self.literal_layers[-1]
-
-            #print('layer: '+str(idx))
-
-            for g in self.goal:
-                #print(g)
-                for item in ll:
-                    if item == g:
-                        if not satisfied[g]:
-                            satisfied[g] = True
-
-                if not satisfied[g]:
-                    cost[g] += 1
-
-            self._extend()
-            idx += 1
+        cost = self.levelcost()
 
         level_sum = 0
 
@@ -197,7 +210,7 @@ class PlanningGraph:
         a single goal literal.
 
         For example, if Goal1 first appears in level 1 of the graph and
-        Goal2 first appears in level 3, then the levelsum is max(1, 3) = 3.
+        Goal2 first appears in level 3, then the max level is max(1, 3) = 3.
 
         Hints
         -----
@@ -214,8 +227,16 @@ class PlanningGraph:
         -----
         WARNING: you should expect long runtimes using this heuristic with A*
         """
-        # TODO: implement maxlevel heuristic
-        raise NotImplementedError
+
+        cost = self.levelcost()
+
+        max_level = 0
+
+        for g,c in cost.items():
+            if c > max_level:
+                max_level = c
+
+        return max_level
 
     def h_setlevel(self):
         """ Calculate the set level heuristic for the planning graph
@@ -239,8 +260,55 @@ class PlanningGraph:
         -----
         WARNING: you should expect long runtimes using this heuristic on complex problems
         """
-        # TODO: implement setlevel heuristic
-        raise NotImplementedError
+
+        cost = {}
+        satisfied = {}
+
+        for g in self.goal:
+            cost[g] = 0
+            satisfied[g] = False
+
+        idx = 0
+        while not self._is_leveled:
+            ll = self.literal_layers[-1]
+
+            for g in self.goal:
+                #print(g)
+                for item in ll:
+                    if item == g:
+                        if not satisfied[g]:
+                            satisfied[g] = True
+
+                if not satisfied[g]:
+                    cost[g] += 1
+
+            no_goals_left = not (False in satisfied.values())
+
+            #print('layer: '+str(idx))
+            #print(satisfied)
+            #print('leveled? '+str(self._is_leveled))
+            #print('no goals left?'+str(no_goals_left))
+
+            if no_goals_left == False:
+                self._extend()
+                idx += 1
+                continue
+
+            goals_are_mutex = False
+
+            for goalA in self.goal:
+                for goalB in self.goal:
+                    if ll.is_mutex(goalA,goalB):
+                        goals_are_mutex = True
+
+            #print('goals are mutex?'+str(goals_are_mutex))
+            #print('idx: '+str(idx))
+
+            if goals_are_mutex == False:
+                return idx
+            else:
+                self._extend()
+                idx += 1
 
     ##############################################################################
     #                     DO NOT MODIFY CODE BELOW THIS LINE                     #
